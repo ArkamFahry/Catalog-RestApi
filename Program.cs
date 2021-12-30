@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
+using System.Net.Mime;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,9 +63,16 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
                 checks = report.Entries.Select(entry => new
                 {
                     name = entry.Key,
+                    status = entry.Value.Status.ToString(),
+                    exception = entry.Value.Exception != null ? entry.Value.Exception.Message : "none",
+                    duration = entry.Value.Duration.ToString(),
                 })
             }
         );
+
+        context.Response.ContentType = MediaTypeNames.Application.Json;
+        await context.Response.WriteAsync(result);
+
     }
 });
 
